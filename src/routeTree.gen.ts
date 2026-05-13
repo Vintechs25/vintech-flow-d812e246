@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppSalesRouteImport } from './routes/_app/sales'
+import { Route as AppReportsRouteImport } from './routes/_app/reports'
 import { Route as AppProcurementRouteImport } from './routes/_app/procurement'
 import { Route as AppPosRouteImport } from './routes/_app/pos'
 
@@ -35,6 +36,11 @@ const AppSalesRoute = AppSalesRouteImport.update({
   path: '/sales',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppProcurementRoute = AppProcurementRouteImport.update({
   id: '/procurement',
   path: '/procurement',
@@ -51,12 +57,14 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/pos': typeof AppPosRoute
   '/procurement': typeof AppProcurementRoute
+  '/reports': typeof AppReportsRoute
   '/sales': typeof AppSalesRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/pos': typeof AppPosRoute
   '/procurement': typeof AppProcurementRoute
+  '/reports': typeof AppReportsRoute
   '/sales': typeof AppSalesRoute
   '/': typeof AppIndexRoute
 }
@@ -66,20 +74,22 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_app/pos': typeof AppPosRoute
   '/_app/procurement': typeof AppProcurementRoute
+  '/_app/reports': typeof AppReportsRoute
   '/_app/sales': typeof AppSalesRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/pos' | '/procurement' | '/sales'
+  fullPaths: '/' | '/login' | '/pos' | '/procurement' | '/reports' | '/sales'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/pos' | '/procurement' | '/sales' | '/'
+  to: '/login' | '/pos' | '/procurement' | '/reports' | '/sales' | '/'
   id:
     | '__root__'
     | '/_app'
     | '/login'
     | '/_app/pos'
     | '/_app/procurement'
+    | '/_app/reports'
     | '/_app/sales'
     | '/_app/'
   fileRoutesById: FileRoutesById
@@ -119,6 +129,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSalesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/reports': {
+      id: '/_app/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/procurement': {
       id: '/_app/procurement'
       path: '/procurement'
@@ -139,6 +156,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppPosRoute: typeof AppPosRoute
   AppProcurementRoute: typeof AppProcurementRoute
+  AppReportsRoute: typeof AppReportsRoute
   AppSalesRoute: typeof AppSalesRoute
   AppIndexRoute: typeof AppIndexRoute
 }
@@ -146,6 +164,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppPosRoute: AppPosRoute,
   AppProcurementRoute: AppProcurementRoute,
+  AppReportsRoute: AppReportsRoute,
   AppSalesRoute: AppSalesRoute,
   AppIndexRoute: AppIndexRoute,
 }
