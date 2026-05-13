@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppSalesRouteImport } from './routes/_app/sales'
 import { Route as AppProcurementRouteImport } from './routes/_app/procurement'
+import { Route as AppPosRouteImport } from './routes/_app/pos'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -39,15 +40,22 @@ const AppProcurementRoute = AppProcurementRouteImport.update({
   path: '/procurement',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPosRoute = AppPosRouteImport.update({
+  id: '/pos',
+  path: '/pos',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
+  '/pos': typeof AppPosRoute
   '/procurement': typeof AppProcurementRoute
   '/sales': typeof AppSalesRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/pos': typeof AppPosRoute
   '/procurement': typeof AppProcurementRoute
   '/sales': typeof AppSalesRoute
   '/': typeof AppIndexRoute
@@ -56,19 +64,21 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/_app/pos': typeof AppPosRoute
   '/_app/procurement': typeof AppProcurementRoute
   '/_app/sales': typeof AppSalesRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/procurement' | '/sales'
+  fullPaths: '/' | '/login' | '/pos' | '/procurement' | '/sales'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/procurement' | '/sales' | '/'
+  to: '/login' | '/pos' | '/procurement' | '/sales' | '/'
   id:
     | '__root__'
     | '/_app'
     | '/login'
+    | '/_app/pos'
     | '/_app/procurement'
     | '/_app/sales'
     | '/_app/'
@@ -116,16 +126,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProcurementRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/pos': {
+      id: '/_app/pos'
+      path: '/pos'
+      fullPath: '/pos'
+      preLoaderRoute: typeof AppPosRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppPosRoute: typeof AppPosRoute
   AppProcurementRoute: typeof AppProcurementRoute
   AppSalesRoute: typeof AppSalesRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppPosRoute: AppPosRoute,
   AppProcurementRoute: AppProcurementRoute,
   AppSalesRoute: AppSalesRoute,
   AppIndexRoute: AppIndexRoute,
