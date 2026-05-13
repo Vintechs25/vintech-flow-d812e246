@@ -32,9 +32,9 @@ export function Rfqs() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <p className="text-sm text-muted-foreground">Send RFQ to ≥3 suppliers. Compare quotes and select winning supplier.</p>
-        <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button disabled={prs.length === 0}><Plus className="h-4 w-4 mr-1" /> New RFQ</Button></DialogTrigger>
-          <NewRfqDialog prs={prs} suppliers={suppliers} onClose={(s) => { setOpen(false); if (s) refresh(); }} />
+          <NewRfqDialog prs={prs} suppliers={suppliers} onClose={(s: boolean) => { setOpen(false); if (s) refresh(); }} />
         </Dialog>
       </div>
       {prs.length === 0 && <BlockBanner>No approved PRs available — approve a PR first.</BlockBanner>}
