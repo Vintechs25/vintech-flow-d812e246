@@ -7,7 +7,7 @@ export function useTable<T = any>(table: string, opts?: { order?: string; ascend
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    let q: any = supabase.from(table).select("*").order(opts?.order ?? "created_at", { ascending: opts?.ascending ?? false });
+    let q: any = (supabase as any).from(table).select("*").order(opts?.order ?? "created_at", { ascending: opts?.ascending ?? false });
     if (opts?.filter) q = opts.filter(q);
     const { data } = await q;
     setData((data ?? []) as T[]);
