@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/status-badge";
 import {
-  TrendingUp, Receipt, AlertTriangle, FileWarning, ArrowUpRight, ArrowDownRight, Package, Plus, Inbox,
+  TrendingUp, Receipt, AlertTriangle, FileWarning, ArrowUpRight, ArrowDownRight, Package, Plus, Inbox, ClipboardList as ClipboardListIcon,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
