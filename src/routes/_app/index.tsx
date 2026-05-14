@@ -438,5 +438,3 @@ function Dashboard() {
   );
 }
 
-// local fallback icon import to keep tree-shaking simple
-import { ClipboardList as ClipboardListIcon } from "lucide-react";
