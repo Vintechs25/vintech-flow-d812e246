@@ -12,11 +12,19 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppUsersRouteImport } from './routes/_app/users'
+import { Route as AppSuppliersRouteImport } from './routes/_app/suppliers'
+import { Route as AppStockMovementRouteImport } from './routes/_app/stock-movement'
+import { Route as AppStockRouteImport } from './routes/_app/stock'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppSalesRouteImport } from './routes/_app/sales'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
 import { Route as AppProcurementRouteImport } from './routes/_app/procurement'
 import { Route as AppPosRouteImport } from './routes/_app/pos'
+import { Route as AppPaymentsRouteImport } from './routes/_app/payments'
+import { Route as AppItemsRouteImport } from './routes/_app/items'
+import { Route as AppInvoicesRouteImport } from './routes/_app/invoices'
+import { Route as AppEmailLogRouteImport } from './routes/_app/email-log'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -30,6 +38,26 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersRoute = AppUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSuppliersRoute = AppSuppliersRouteImport.update({
+  id: '/suppliers',
+  path: '/suppliers',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStockMovementRoute = AppStockMovementRouteImport.update({
+  id: '/stock-movement',
+  path: '/stock-movement',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStockRoute = AppStockRouteImport.update({
+  id: '/stock',
+  path: '/stock',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
@@ -57,34 +85,78 @@ const AppPosRoute = AppPosRouteImport.update({
   path: '/pos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPaymentsRoute = AppPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppItemsRoute = AppItemsRouteImport.update({
+  id: '/items',
+  path: '/items',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInvoicesRoute = AppInvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEmailLogRoute = AppEmailLogRouteImport.update({
+  id: '/email-log',
+  path: '/email-log',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
+  '/email-log': typeof AppEmailLogRoute
+  '/invoices': typeof AppInvoicesRoute
+  '/items': typeof AppItemsRoute
+  '/payments': typeof AppPaymentsRoute
   '/pos': typeof AppPosRoute
   '/procurement': typeof AppProcurementRoute
   '/reports': typeof AppReportsRoute
   '/sales': typeof AppSalesRoute
   '/settings': typeof AppSettingsRoute
+  '/stock': typeof AppStockRoute
+  '/stock-movement': typeof AppStockMovementRoute
+  '/suppliers': typeof AppSuppliersRoute
+  '/users': typeof AppUsersRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/email-log': typeof AppEmailLogRoute
+  '/invoices': typeof AppInvoicesRoute
+  '/items': typeof AppItemsRoute
+  '/payments': typeof AppPaymentsRoute
   '/pos': typeof AppPosRoute
   '/procurement': typeof AppProcurementRoute
   '/reports': typeof AppReportsRoute
   '/sales': typeof AppSalesRoute
   '/settings': typeof AppSettingsRoute
+  '/stock': typeof AppStockRoute
+  '/stock-movement': typeof AppStockMovementRoute
+  '/suppliers': typeof AppSuppliersRoute
+  '/users': typeof AppUsersRoute
   '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/_app/email-log': typeof AppEmailLogRoute
+  '/_app/invoices': typeof AppInvoicesRoute
+  '/_app/items': typeof AppItemsRoute
+  '/_app/payments': typeof AppPaymentsRoute
   '/_app/pos': typeof AppPosRoute
   '/_app/procurement': typeof AppProcurementRoute
   '/_app/reports': typeof AppReportsRoute
   '/_app/sales': typeof AppSalesRoute
   '/_app/settings': typeof AppSettingsRoute
+  '/_app/stock': typeof AppStockRoute
+  '/_app/stock-movement': typeof AppStockMovementRoute
+  '/_app/suppliers': typeof AppSuppliersRoute
+  '/_app/users': typeof AppUsersRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
@@ -92,29 +164,53 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/email-log'
+    | '/invoices'
+    | '/items'
+    | '/payments'
     | '/pos'
     | '/procurement'
     | '/reports'
     | '/sales'
     | '/settings'
+    | '/stock'
+    | '/stock-movement'
+    | '/suppliers'
+    | '/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/email-log'
+    | '/invoices'
+    | '/items'
+    | '/payments'
     | '/pos'
     | '/procurement'
     | '/reports'
     | '/sales'
     | '/settings'
+    | '/stock'
+    | '/stock-movement'
+    | '/suppliers'
+    | '/users'
     | '/'
   id:
     | '__root__'
     | '/_app'
     | '/login'
+    | '/_app/email-log'
+    | '/_app/invoices'
+    | '/_app/items'
+    | '/_app/payments'
     | '/_app/pos'
     | '/_app/procurement'
     | '/_app/reports'
     | '/_app/sales'
     | '/_app/settings'
+    | '/_app/stock'
+    | '/_app/stock-movement'
+    | '/_app/suppliers'
+    | '/_app/users'
     | '/_app/'
   fileRoutesById: FileRoutesById
 }
@@ -144,6 +240,34 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users': {
+      id: '/_app/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AppUsersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/suppliers': {
+      id: '/_app/suppliers'
+      path: '/suppliers'
+      fullPath: '/suppliers'
+      preLoaderRoute: typeof AppSuppliersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/stock-movement': {
+      id: '/_app/stock-movement'
+      path: '/stock-movement'
+      fullPath: '/stock-movement'
+      preLoaderRoute: typeof AppStockMovementRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/stock': {
+      id: '/_app/stock'
+      path: '/stock'
+      fullPath: '/stock'
+      preLoaderRoute: typeof AppStockRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/settings': {
@@ -181,24 +305,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/payments': {
+      id: '/_app/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof AppPaymentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/items': {
+      id: '/_app/items'
+      path: '/items'
+      fullPath: '/items'
+      preLoaderRoute: typeof AppItemsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/invoices': {
+      id: '/_app/invoices'
+      path: '/invoices'
+      fullPath: '/invoices'
+      preLoaderRoute: typeof AppInvoicesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/email-log': {
+      id: '/_app/email-log'
+      path: '/email-log'
+      fullPath: '/email-log'
+      preLoaderRoute: typeof AppEmailLogRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppEmailLogRoute: typeof AppEmailLogRoute
+  AppInvoicesRoute: typeof AppInvoicesRoute
+  AppItemsRoute: typeof AppItemsRoute
+  AppPaymentsRoute: typeof AppPaymentsRoute
   AppPosRoute: typeof AppPosRoute
   AppProcurementRoute: typeof AppProcurementRoute
   AppReportsRoute: typeof AppReportsRoute
   AppSalesRoute: typeof AppSalesRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppStockRoute: typeof AppStockRoute
+  AppStockMovementRoute: typeof AppStockMovementRoute
+  AppSuppliersRoute: typeof AppSuppliersRoute
+  AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppEmailLogRoute: AppEmailLogRoute,
+  AppInvoicesRoute: AppInvoicesRoute,
+  AppItemsRoute: AppItemsRoute,
+  AppPaymentsRoute: AppPaymentsRoute,
   AppPosRoute: AppPosRoute,
   AppProcurementRoute: AppProcurementRoute,
   AppReportsRoute: AppReportsRoute,
   AppSalesRoute: AppSalesRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppStockRoute: AppStockRoute,
+  AppStockMovementRoute: AppStockMovementRoute,
+  AppSuppliersRoute: AppSuppliersRoute,
+  AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
