@@ -22,12 +22,14 @@ function SettingsPage() {
       <Tabs defaultValue="company">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="company">Company</TabsTrigger>
+          <TabsTrigger value="pin">My Approval PIN</TabsTrigger>
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
           <TabsTrigger value="customers">Customers</TabsTrigger>
           <TabsTrigger value="users">Users &amp; Roles</TabsTrigger>
         </TabsList>
         <TabsContent value="company"><CompanyTab /></TabsContent>
+        <TabsContent value="pin"><PinTab /></TabsContent>
         <TabsContent value="products"><CrudTab table="products" fields={[
           { k: "sku", l: "SKU" }, { k: "name", l: "Name" }, { k: "selling_price", l: "Selling price", t: "number" },
           { k: "cost_price", l: "Cost price", t: "number" }, { k: "stock_qty", l: "Stock", t: "number" },
