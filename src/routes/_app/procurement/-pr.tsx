@@ -138,15 +138,20 @@ function NewPRDialog({ onClose }: { onClose: (saved: boolean) => void }) {
       <div><Label>Reason / Justification</Label><Textarea value={reason} onChange={(e) => setReason(e.target.value)} /></div>
       <div>
         <div className="flex items-center justify-between mb-2">
-          <Label>Items</Label>
+          <Label>Items (search existing products)</Label>
           <Button type="button" variant="outline" size="sm" onClick={() => setItems((a) => [...a, { description: "", quantity: 1, unit: "pcs" }])}>
-            <Plus className="h-3 w-3 mr-1" />Add item
+            <Plus className="h-3 w-3 mr-1" />Add line
           </Button>
         </div>
         <div className="space-y-2">
           {items.map((it, i) => (
             <div key={i} className="flex gap-2 items-center">
-              <Input className="flex-1" placeholder="Description" value={it.description} onChange={(e) => setItem(i, { description: e.target.value })} />
+              <div className="flex-1">
+                <ProductPicker
+                  value={it.product_id ? { id: it.product_id, name: it.description, sku: "", unit: it.unit, selling_price: 0, cost_price: 0, stock_qty: 0 } as ProductLite : null}
+                  onSelect={(p) => setItem(i, { product_id: p.id, description: p.name, unit: p.unit ?? "pcs" })}
+                />
+              </div>
               <Input className="w-24" type="number" placeholder="Qty" value={it.quantity} onChange={(e) => setItem(i, { quantity: Number(e.target.value) })} />
               <Input className="w-20" placeholder="Unit" value={it.unit} onChange={(e) => setItem(i, { unit: e.target.value })} />
               <Button type="button" size="icon" variant="ghost" onClick={() => setItems((a) => a.filter((_, idx) => idx !== i))}><Trash2 className="h-3 w-3" /></Button>
