@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { StatusBadge } from "@/components/status-badge";
 import { BlockBanner } from "@/components/chain-ui";
 import { nextDocNo } from "@/hooks/use-table";
+import { PaymentTermsSelect } from "@/components/payment-terms-select";
 
 type Item = { description: string; quantity: number; unit_price: number };
 
