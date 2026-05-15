@@ -50,22 +50,45 @@ function SettingsPage() {
 function CompanyTab() {
   const [s, setS] = useState<any>(null);
   useEffect(() => { supabase.from("company_settings").select("*").eq("id", 1).single().then(({ data }) => setS(data)); }, []);
+  const FIELDS = ["company_name","kra_pin","vat_rate","low_stock_threshold","address","phone","email",
+    "logo_url","bank_name","bank_account","bank_branch","bank_swift","mpesa_paybill","mpesa_till","mpesa_account"];
   async function save() {
-    const { error } = await supabase.from("company_settings").update({
-      company_name: s.company_name, kra_pin: s.kra_pin, vat_rate: s.vat_rate,
-      low_stock_threshold: s.low_stock_threshold, address: s.address, phone: s.phone, email: s.email,
-    }).eq("id", 1);
+    const payload: any = {}; FIELDS.forEach((k) => payload[k] = s[k] ?? null);
+    const { error } = await supabase.from("company_settings").update(payload).eq("id", 1);
     if (error) toast.error(error.message); else toast.success("Settings saved");
   }
   if (!s) return <p className="text-sm text-muted-foreground p-4">Loading…</p>;
   return (
-    <Card><CardHeader><CardTitle className="text-base">Company</CardTitle></CardHeader>
+    <Card><CardHeader><CardTitle className="text-base">Company &amp; Payment Details</CardTitle></CardHeader>
       <CardContent className="grid grid-cols-2 gap-3">
-        {["company_name", "kra_pin", "vat_rate", "low_stock_threshold", "address", "phone", "email"].map((k) => (
-          <div key={k}><Label className="capitalize">{k.replace(/_/g, " ")}</Label>
+        {FIELDS.map((k) => (
+          <div key={k}><Label className="capitalize text-xs">{k.replace(/_/g, " ")}</Label>
             <Input value={s[k] ?? ""} onChange={(e) => setS({ ...s, [k]: e.target.value })} /></div>
         ))}
         <div className="col-span-2"><Button onClick={save}>Save</Button></div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PinTab() {
+  const [pin, setPin] = useState("");
+  const [pin2, setPin2] = useState("");
+  async function save() {
+    if (!/^\d{4,6}$/.test(pin)) return toast.error("PIN must be 4-6 digits");
+    if (pin !== pin2) return toast.error("PINs do not match");
+    const { error } = await supabase.rpc("set_my_pin", { _pin: pin });
+    if (error) return toast.error(error.message);
+    toast.success("Approval PIN saved");
+    setPin(""); setPin2("");
+  }
+  return (
+    <Card><CardHeader><CardTitle className="text-base">Personal Approval PIN</CardTitle></CardHeader>
+      <CardContent className="space-y-3 max-w-sm">
+        <p className="text-xs text-muted-foreground">Used to authorise approvals, proof uploads, and document reverts. Masked, hashed, never stored in plain text.</p>
+        <div><Label>New PIN (4–6 digits)</Label><Input type="password" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g,""))} maxLength={6} /></div>
+        <div><Label>Confirm PIN</Label><Input type="password" inputMode="numeric" value={pin2} onChange={(e) => setPin2(e.target.value.replace(/\D/g,""))} maxLength={6} /></div>
+        <Button onClick={save}>Save PIN</Button>
       </CardContent>
     </Card>
   );
