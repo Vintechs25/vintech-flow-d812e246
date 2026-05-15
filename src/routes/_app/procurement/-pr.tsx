@@ -97,7 +97,7 @@ function NewPRDialog({ onClose }: { onClose: (saved: boolean) => void }) {
   }
 
   async function save() {
-    if (items.some((i) => !i.description.trim() || i.quantity <= 0)) return toast.error("All items need description and qty > 0");
+    if (items.some((i) => !i.description.trim() || i.quantity <= 0)) return toast.error("Pick a product and qty > 0 for each line");
     setSaving(true);
     try {
       const pr_no = await nextDocNo("PR");
@@ -106,7 +106,9 @@ function NewPRDialog({ onClose }: { onClose: (saved: boolean) => void }) {
         pr_no, department, budget_code: budget, urgency, reason, status: "pending", created_by: user?.id,
       }).select("id").single();
       if (error) throw error;
-      const { error: e2 } = await supabase.from("pr_items").insert(items.map((i) => ({ ...i, pr_id: pr.id })));
+      const { error: e2 } = await supabase.from("pr_items").insert(items.map((i) => ({
+        pr_id: pr.id, description: i.description, quantity: i.quantity, unit: i.unit,
+      })));
       if (e2) throw e2;
       toast.success(`Created ${pr_no}`);
       onClose(true);
