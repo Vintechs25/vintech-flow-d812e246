@@ -122,7 +122,7 @@ function NewLpoDialog({ prs, suppliers, onClose }: any) {
           </Select>
         </div>
         <div><Label>Delivery date</Label><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
-        <div><Label>Payment terms</Label><Input value={terms} onChange={(e) => setTerms(e.target.value)} /></div>
+        <div><Label>Payment terms</Label><PaymentTermsSelect value={terms} onChange={setTerms} /></div>
         <div className="col-span-2"><Label>Authorised signatory</Label><Input value={signatory} onChange={(e) => setSignatory(e.target.value)} /></div>
       </div>
       <div>
