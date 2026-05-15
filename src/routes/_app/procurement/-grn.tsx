@@ -6,11 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, CheckCircle2 } from "lucide-react";
+import { Plus, CheckCircle2, Printer, Paperclip } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBadge } from "@/components/status-badge";
 import { BlockBanner } from "@/components/chain-ui";
 import { nextDocNo } from "@/hooks/use-table";
+import { PinApprovalDialog } from "@/components/pin-approval-dialog";
+import { ProofUpload } from "@/components/proof-upload";
+import { PrintDialog, type DocPrintData } from "@/components/print-dialog";
+import { LineageBadge } from "@/components/lineage";
 
 export function Grns() {
   const [rows, setRows] = useState<any[]>([]);
