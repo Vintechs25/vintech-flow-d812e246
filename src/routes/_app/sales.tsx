@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { StatusBadge } from "@/components/status-badge";
 import { StepIndicator, BlockBanner } from "@/components/chain-ui";
 import { nextDocNo } from "@/hooks/use-table";
+import { PaymentTermsSelect } from "@/components/payment-terms-select";
 
 export const Route = createFileRoute("/_app/sales")({ component: SalesPage });
 
