@@ -70,21 +70,23 @@ export function Grns() {
       <div className="rounded-md border">
         <Table>
           <TableHeader><TableRow>
-            <TableHead>GRN No</TableHead><TableHead>LPO</TableHead><TableHead>Supplier</TableHead>
-            <TableHead>Status</TableHead><TableHead className="text-right">Action</TableHead>
+            <TableHead>GRN No</TableHead><TableHead>Lineage</TableHead><TableHead>Supplier</TableHead>
+            <TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
           </TableRow></TableHeader>
           <TableBody>
             {rows.length === 0 ? <TableRow><TableCell colSpan={5} className="text-muted-foreground">No GRNs yet</TableCell></TableRow>
               : rows.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-mono">{r.grn_no}</TableCell>
-                  <TableCell>{r.lpos?.lpo_no}</TableCell>
+                  <TableCell><LineageBadge chain={[r.lpos?.lpo_no, r.grn_no]} /></TableCell>
                   <TableCell>{r.lpos?.suppliers?.name}</TableCell>
                   <TableCell><StatusBadge status={r.status} /></TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right space-x-1">
+                    <Button size="sm" variant="ghost" onClick={() => openPrint(r)}><Printer className="h-3 w-3" /></Button>
+                    <Button size="sm" variant="ghost" onClick={() => setProofFor(r)}><Paperclip className="h-3 w-3" /></Button>
                     {r.status !== "completed" && (
-                      <Button size="sm" variant="outline" onClick={() => complete(r.id)}>
-                        <CheckCircle2 className="h-3 w-3 mr-1" />Sign &amp; Post
+                      <Button size="sm" variant="outline" onClick={() => setPinTarget(r.id)}>
+                        <CheckCircle2 className="h-3 w-3 mr-1" />Approve &amp; Post
                       </Button>
                     )}
                   </TableCell>
@@ -93,6 +95,23 @@ export function Grns() {
           </TableBody>
         </Table>
       </div>
+
+      <PinApprovalDialog
+        open={!!pinTarget}
+        onOpenChange={(o) => !o && setPinTarget(null)}
+        title="Authorise GRN posting"
+        description="This will update stock levels."
+        onApproved={async () => { if (pinTarget) await complete(pinTarget); setPinTarget(null); }}
+      />
+
+      <Dialog open={!!proofFor} onOpenChange={(o) => !o && setProofFor(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Proof for {proofFor?.grn_no}</DialogTitle></DialogHeader>
+          {proofFor && <ProofUpload docType="grn" docId={proofFor.id} />}
+        </DialogContent>
+      </Dialog>
+
+      {printFor && <PrintDialog open={!!printFor} onOpenChange={(o) => !o && setPrintFor(null)} doc={printFor} />}
     </div>
   );
 }
