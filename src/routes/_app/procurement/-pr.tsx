@@ -11,8 +11,9 @@ import { Plus, Check, X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBadge } from "@/components/status-badge";
 import { nextDocNo } from "@/hooks/use-table";
+import { ProductPicker, type ProductLite } from "@/components/product-picker";
 
-type Item = { description: string; quantity: number; unit: string };
+type Item = { description: string; quantity: number; unit: string; product_id?: string | null };
 
 export function PurchaseRequisitions() {
   const [rows, setRows] = useState<any[]>([]);
