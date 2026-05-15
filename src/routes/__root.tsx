@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
+import { PrintStyles } from "@/components/print-dialog";
 
 import appCss from "../styles.css?url";
 
@@ -82,6 +83,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
+      <PrintStyles />
       <Outlet />
       <Toaster richColors position="top-right" />
     </QueryClientProvider>

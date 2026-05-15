@@ -6,19 +6,26 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, CheckCircle2 } from "lucide-react";
+import { Plus, CheckCircle2, Printer, Paperclip } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBadge } from "@/components/status-badge";
 import { BlockBanner } from "@/components/chain-ui";
 import { nextDocNo } from "@/hooks/use-table";
+import { PinApprovalDialog } from "@/components/pin-approval-dialog";
+import { ProofUpload } from "@/components/proof-upload";
+import { PrintDialog, type DocPrintData } from "@/components/print-dialog";
+import { LineageBadge } from "@/components/lineage";
 
 export function Grns() {
   const [rows, setRows] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [lpos, setLpos] = useState<any[]>([]);
+  const [pinTarget, setPinTarget] = useState<string | null>(null);
+  const [proofFor, setProofFor] = useState<any | null>(null);
+  const [printFor, setPrintFor] = useState<DocPrintData | null>(null);
 
   async function refresh() {
-    const { data } = await supabase.from("grns").select("*, lpos(lpo_no, suppliers(name))").order("created_at", { ascending: false });
+    const { data } = await supabase.from("grns").select("*, lpos(lpo_no, suppliers(name, kra_pin, address)), grn_items(received_qty, lpo_qty, products(name, unit, selling_price))").order("created_at", { ascending: false });
     setRows(data ?? []);
   }
   useEffect(() => {
@@ -29,8 +36,25 @@ export function Grns() {
   async function complete(id: string) {
     const { error } = await supabase.from("grns").update({ status: "completed" }).eq("id", id);
     if (error) return toast.error(error.message);
+    await supabase.from("audit_log").insert({ action: "grn_post", table_name: "grns", record_id: id });
     toast.success("GRN posted — stock updated");
     refresh();
+  }
+
+  function openPrint(r: any) {
+    setPrintFor({
+      docType: "GOODS RECEIVED NOTE",
+      docNo: r.grn_no,
+      date: new Date(r.created_at).toLocaleDateString(),
+      reference: r.lpos?.lpo_no ? `${r.lpos.lpo_no} → ${r.grn_no}` : undefined,
+      billTo: { name: r.lpos?.suppliers?.name ?? "—", kra_pin: r.lpos?.suppliers?.kra_pin, address: r.lpos?.suppliers?.address },
+      lines: (r.grn_items ?? []).map((it: any) => ({
+        description: it.products?.name ?? "—",
+        quantity: Number(it.received_qty ?? 0),
+        unit: it.products?.unit ?? "pcs",
+        unit_price: Number(it.products?.selling_price ?? 0),
+      })),
+    });
   }
 
   return (
@@ -46,21 +70,23 @@ export function Grns() {
       <div className="rounded-md border">
         <Table>
           <TableHeader><TableRow>
-            <TableHead>GRN No</TableHead><TableHead>LPO</TableHead><TableHead>Supplier</TableHead>
-            <TableHead>Status</TableHead><TableHead className="text-right">Action</TableHead>
+            <TableHead>GRN No</TableHead><TableHead>Lineage</TableHead><TableHead>Supplier</TableHead>
+            <TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
           </TableRow></TableHeader>
           <TableBody>
             {rows.length === 0 ? <TableRow><TableCell colSpan={5} className="text-muted-foreground">No GRNs yet</TableCell></TableRow>
               : rows.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-mono">{r.grn_no}</TableCell>
-                  <TableCell>{r.lpos?.lpo_no}</TableCell>
+                  <TableCell><LineageBadge chain={[r.lpos?.lpo_no, r.grn_no]} /></TableCell>
                   <TableCell>{r.lpos?.suppliers?.name}</TableCell>
                   <TableCell><StatusBadge status={r.status} /></TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right space-x-1">
+                    <Button size="sm" variant="ghost" onClick={() => openPrint(r)}><Printer className="h-3 w-3" /></Button>
+                    <Button size="sm" variant="ghost" onClick={() => setProofFor(r)}><Paperclip className="h-3 w-3" /></Button>
                     {r.status !== "completed" && (
-                      <Button size="sm" variant="outline" onClick={() => complete(r.id)}>
-                        <CheckCircle2 className="h-3 w-3 mr-1" />Sign &amp; Post
+                      <Button size="sm" variant="outline" onClick={() => setPinTarget(r.id)}>
+                        <CheckCircle2 className="h-3 w-3 mr-1" />Approve &amp; Post
                       </Button>
                     )}
                   </TableCell>
@@ -69,6 +95,23 @@ export function Grns() {
           </TableBody>
         </Table>
       </div>
+
+      <PinApprovalDialog
+        open={!!pinTarget}
+        onOpenChange={(o) => !o && setPinTarget(null)}
+        title="Authorise GRN posting"
+        description="This will update stock levels."
+        onApproved={async () => { if (pinTarget) await complete(pinTarget); setPinTarget(null); }}
+      />
+
+      <Dialog open={!!proofFor} onOpenChange={(o) => !o && setProofFor(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Proof for {proofFor?.grn_no}</DialogTitle></DialogHeader>
+          {proofFor && <ProofUpload docType="grn" docId={proofFor.id} />}
+        </DialogContent>
+      </Dialog>
+
+      {printFor && <PrintDialog open={!!printFor} onOpenChange={(o) => !o && setPrintFor(null)} doc={printFor} />}
     </div>
   );
 }

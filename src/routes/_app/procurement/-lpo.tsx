@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { StatusBadge } from "@/components/status-badge";
 import { BlockBanner } from "@/components/chain-ui";
 import { nextDocNo } from "@/hooks/use-table";
+import { PaymentTermsSelect } from "@/components/payment-terms-select";
 
 type Item = { description: string; quantity: number; unit_price: number };
 
@@ -121,7 +122,7 @@ function NewLpoDialog({ prs, suppliers, onClose }: any) {
           </Select>
         </div>
         <div><Label>Delivery date</Label><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
-        <div><Label>Payment terms</Label><Input value={terms} onChange={(e) => setTerms(e.target.value)} /></div>
+        <div><Label>Payment terms</Label><PaymentTermsSelect value={terms} onChange={setTerms} /></div>
         <div className="col-span-2"><Label>Authorised signatory</Label><Input value={signatory} onChange={(e) => setSignatory(e.target.value)} /></div>
       </div>
       <div>

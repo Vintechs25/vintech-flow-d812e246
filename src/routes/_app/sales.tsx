@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { StatusBadge } from "@/components/status-badge";
 import { StepIndicator, BlockBanner } from "@/components/chain-ui";
 import { nextDocNo } from "@/hooks/use-table";
+import { PaymentTermsSelect } from "@/components/payment-terms-select";
 
 export const Route = createFileRoute("/_app/sales")({ component: SalesPage });
 
@@ -234,7 +235,7 @@ function Quotations() {
                 </Select>
               </div>
               <div><Label>Valid until</Label><Input type="date" value={validity} onChange={(e) => setValidity(e.target.value)} /></div>
-              <div className="col-span-3"><Label>Payment terms</Label><Input value={payment_terms} onChange={(e) => setPT(e.target.value)} /></div>
+              <div className="col-span-3"><Label>Payment terms</Label><PaymentTermsSelect value={payment_terms} onChange={setPT} /></div>
             </div>
             <ItemsEditor items={items} setItems={setItems} products={products} />
             <div className="flex justify-end text-sm gap-6 pt-2">

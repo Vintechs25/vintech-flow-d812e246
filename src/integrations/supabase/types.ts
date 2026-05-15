@@ -71,39 +71,99 @@ export type Database = {
       company_settings: {
         Row: {
           address: string | null
+          bank_account: string | null
+          bank_branch: string | null
+          bank_name: string | null
+          bank_swift: string | null
           company_name: string
           currency: string
           email: string | null
           id: number
           kra_pin: string | null
+          logo_url: string | null
           low_stock_threshold: number
+          mpesa_account: string | null
+          mpesa_paybill: string | null
+          mpesa_till: string | null
           payment_voucher_dual_auth_threshold: number
           phone: string | null
           vat_rate: number
         }
         Insert: {
           address?: string | null
+          bank_account?: string | null
+          bank_branch?: string | null
+          bank_name?: string | null
+          bank_swift?: string | null
           company_name?: string
           currency?: string
           email?: string | null
           id?: number
           kra_pin?: string | null
+          logo_url?: string | null
           low_stock_threshold?: number
+          mpesa_account?: string | null
+          mpesa_paybill?: string | null
+          mpesa_till?: string | null
           payment_voucher_dual_auth_threshold?: number
           phone?: string | null
           vat_rate?: number
         }
         Update: {
           address?: string | null
+          bank_account?: string | null
+          bank_branch?: string | null
+          bank_name?: string | null
+          bank_swift?: string | null
           company_name?: string
           currency?: string
           email?: string | null
           id?: number
           kra_pin?: string | null
+          logo_url?: string | null
           low_stock_threshold?: number
+          mpesa_account?: string | null
+          mpesa_paybill?: string | null
+          mpesa_till?: string | null
           payment_voucher_dual_auth_threshold?: number
           phone?: string | null
           vat_rate?: number
+        }
+        Relationships: []
+      }
+      correction_requests: {
+        Row: {
+          approved_by: string | null
+          created_at: string
+          decided_at: string | null
+          doc_id: string
+          doc_type: string
+          id: string
+          reason: string
+          requested_by: string | null
+          status: string
+        }
+        Insert: {
+          approved_by?: string | null
+          created_at?: string
+          decided_at?: string | null
+          doc_id: string
+          doc_type: string
+          id?: string
+          reason: string
+          requested_by?: string | null
+          status?: string
+        }
+        Update: {
+          approved_by?: string | null
+          created_at?: string
+          decided_at?: string | null
+          doc_id?: string
+          doc_type?: string
+          id?: string
+          reason?: string
+          requested_by?: string | null
+          status?: string
         }
         Relationships: []
       }
@@ -317,6 +377,39 @@ export type Database = {
           doc_type?: string
           last_no?: number
           prefix?: string
+        }
+        Relationships: []
+      }
+      document_attachments: {
+        Row: {
+          created_at: string
+          doc_id: string
+          doc_type: string
+          file_path: string
+          id: string
+          label: string | null
+          mime_type: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          doc_id: string
+          doc_type: string
+          file_path: string
+          id?: string
+          label?: string | null
+          mime_type?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          doc_id?: string
+          doc_type?: string
+          file_path?: string
+          id?: string
+          label?: string | null
+          mime_type?: string | null
+          uploaded_by?: string | null
         }
         Relationships: []
       }
@@ -1023,22 +1116,31 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_pin_hash: string | null
           created_at: string
           email: string | null
           full_name: string | null
           id: string
+          pin_attempts: number
+          pin_locked_until: string | null
         }
         Insert: {
+          approval_pin_hash?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
+          pin_attempts?: number
+          pin_locked_until?: string | null
         }
         Update: {
+          approval_pin_hash?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          pin_attempts?: number
+          pin_locked_until?: string | null
         }
         Relationships: []
       }
@@ -1711,6 +1813,8 @@ export type Database = {
         Returns: boolean
       }
       next_doc_no: { Args: { _doc_type: string }; Returns: string }
+      set_my_pin: { Args: { _pin: string }; Returns: undefined }
+      verify_my_pin: { Args: { _pin: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "cashier" | "storekeeper" | "buyer"
