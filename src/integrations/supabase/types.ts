@@ -1611,6 +1611,80 @@ export type Database = {
           },
         ]
       }
+      stock_requisition_items: {
+        Row: {
+          description: string
+          id: string
+          product_id: string | null
+          quantity: number
+          sr_id: string
+          unit: string | null
+        }
+        Insert: {
+          description: string
+          id?: string
+          product_id?: string | null
+          quantity: number
+          sr_id: string
+          unit?: string | null
+        }
+        Update: {
+          description?: string
+          id?: string
+          product_id?: string | null
+          quantity?: number
+          sr_id?: string
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_requisition_items_sr_id_fkey"
+            columns: ["sr_id"]
+            isOneToOne: false
+            referencedRelation: "stock_requisitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_requisitions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          created_by: string | null
+          department: string | null
+          id: string
+          reason: string | null
+          sr_no: string
+          status: Database["public"]["Enums"]["doc_status"]
+          urgency: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          department?: string | null
+          id?: string
+          reason?: string | null
+          sr_no: string
+          status?: Database["public"]["Enums"]["doc_status"]
+          urgency?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          department?: string | null
+          id?: string
+          reason?: string | null
+          sr_no?: string
+          status?: Database["public"]["Enums"]["doc_status"]
+          urgency?: string | null
+        }
+        Relationships: []
+      }
       supplier_delivery_notes: {
         Row: {
           driver_name: string | null
@@ -1812,7 +1886,22 @@ export type Database = {
         }
         Returns: boolean
       }
+      log_audit: {
+        Args: {
+          _action: string
+          _new?: Json
+          _old?: Json
+          _reason?: string
+          _record_id: string
+          _table: string
+        }
+        Returns: undefined
+      }
       next_doc_no: { Args: { _doc_type: string }; Returns: string }
+      revert_document: {
+        Args: { _doc_id: string; _reason: string; _table: string }
+        Returns: undefined
+      }
       set_my_pin: { Args: { _pin: string }; Returns: undefined }
       verify_my_pin: { Args: { _pin: string }; Returns: boolean }
     }
