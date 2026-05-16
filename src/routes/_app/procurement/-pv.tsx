@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { StatusBadge } from "@/components/status-badge";
 import { BlockBanner } from "@/components/chain-ui";
 import { nextDocNo } from "@/hooks/use-table";
+import { DocActions } from "@/components/doc-actions";
+import { PinApprovalDialog } from "@/components/pin-approval-dialog";
 
 export function PaymentVouchers() {
   const [rows, setRows] = useState<any[]>([]);
