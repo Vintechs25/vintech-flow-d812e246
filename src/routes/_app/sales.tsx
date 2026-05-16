@@ -530,7 +530,7 @@ function PackingNotes() {
           </DialogContent>
         </Dialog>
       </div>
-      <DocTable loading={loading} cols={["PN", "SO", "Cartons", "Weight", "Condition", "Created"]}>
+      <DocTable loading={loading} cols={["PN", "SO", "Cartons", "Weight", "Condition", "Created", "Actions"]}>
         {rows.map((r) => (
           <TableRow key={r.id}>
             <TableCell className="font-mono">{r.pn_no}</TableCell>
@@ -539,6 +539,9 @@ function PackingNotes() {
             <TableCell>{r.weight ?? "—"}</TableCell>
             <TableCell>{r.condition_check}</TableCell>
             <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
+            <TableCell className="text-right">
+              <DocActions table="packing_notes" docId={r.id} docLabel={r.pn_no} onReverted={refresh} />
+            </TableCell>
           </TableRow>
         ))}
       </DocTable>
