@@ -18,6 +18,9 @@ import { StatusBadge } from "@/components/status-badge";
 import { StepIndicator, BlockBanner } from "@/components/chain-ui";
 import { nextDocNo } from "@/hooks/use-table";
 import { PaymentTermsSelect } from "@/components/payment-terms-select";
+import { DocActions } from "@/components/doc-actions";
+import { PinApprovalDialog } from "@/components/pin-approval-dialog";
+import type { DocPrintData } from "@/components/print-dialog";
 
 export const Route = createFileRoute("/_app/sales")({ component: SalesPage });
 
