@@ -5,7 +5,7 @@ export async function logAudit(table: string, recordId: string, action: string, 
   try {
     await supabase.rpc("log_audit", {
       _table: table, _record_id: recordId, _action: action,
-      _old: null, _new: null, _reason: reason ?? null,
+      _old: undefined, _new: undefined, _reason: reason,
     });
   } catch { /* noop */ }
 }
