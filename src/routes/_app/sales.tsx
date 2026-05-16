@@ -920,7 +920,7 @@ function CreditNotes() {
           </DialogContent>
         </Dialog>
       </div>
-      <DocTable loading={loading} cols={["CN", "Invoice", "Amount", "Reason", "Created"]}>
+      <DocTable loading={loading} cols={["CN", "Invoice", "Amount", "Reason", "Created", "Actions"]}>
         {rows.map((r) => (
           <TableRow key={r.id}>
             <TableCell className="font-mono">{r.cn_no}</TableCell>
@@ -928,6 +928,17 @@ function CreditNotes() {
             <TableCell>{fmt(r.amount)}</TableCell>
             <TableCell className="text-muted-foreground">{r.reason || "—"}</TableCell>
             <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
+            <TableCell className="text-right">
+              <DocActions
+                table="credit_notes" docId={r.id} docLabel={r.cn_no} onReverted={refresh}
+                buildPrint={() => ({
+                  docType: "CREDIT NOTE", docNo: r.cn_no, date: new Date(r.created_at).toLocaleDateString(),
+                  reference: r.invoice_id ? `Against Inv ${r.invoice_id.slice(0, 8)}` : undefined,
+                  billTo: { name: "Customer" }, notes: r.reason ?? undefined,
+                  lines: [{ description: r.reason || "Credit", quantity: 1, unit_price: Number(r.amount) }],
+                })}
+              />
+            </TableCell>
           </TableRow>
         ))}
       </DocTable>
