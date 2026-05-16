@@ -570,15 +570,16 @@ function DeliveryNotes() {
     if (error) return toast.error(error.message);
     toast.success(`Created ${dn_no}`); setOpen(false); setSo(""); refresh();
   }
-  async function sign(id: string) {
-    const sig = prompt("Customer name / signature:");
-    if (!sig) return;
+  async function sign(id: string, sig: string) {
     const { error } = await supabase.from("delivery_notes").update({
       signed: true, signed_at: new Date().toISOString(), customer_signature: sig,
     }).eq("id", id);
     if (error) return toast.error(error.message);
+    await supabase.rpc("log_audit" as any, { _table: "delivery_notes", _record_id: id, _action: "signed" });
     toast.success("Delivery signed"); refresh();
   }
+  const [signFor, setSignFor] = useState<string | null>(null);
+  const [sigName, setSigName] = useState("");
 
   return (
     <div className="space-y-4">
@@ -612,12 +613,36 @@ function DeliveryNotes() {
             <TableCell>{r.vehicle_reg || "—"}</TableCell>
             <TableCell><StatusBadge status={r.signed ? "completed" : "pending"} /></TableCell>
             <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
-            <TableCell className="text-right">
-              {!r.signed && <Button size="sm" variant="outline" onClick={() => sign(r.id)}>Capture signature</Button>}
+            <TableCell className="text-right space-x-1">
+              {!r.signed && <Button size="sm" variant="outline" onClick={() => { setSignFor(r.id); setSigName(""); }}>Capture signature</Button>}
+              <DocActions
+                table="delivery_notes" docId={r.id} docLabel={r.dn_no} onReverted={refresh}
+                buildPrint={() => ({
+                  docType: "DELIVERY NOTE", docNo: r.dn_no, date: new Date(r.created_at).toLocaleDateString(),
+                  reference: r.so_id ? `SO ${r.so_id.slice(0, 8)} → ${r.dn_no}` : undefined,
+                  billTo: { name: r.driver_name || "Driver", address: r.delivery_address || undefined, phone: r.vehicle_reg || undefined },
+                  lines: [], signoff: r.signed ? `Signed by: ${r.customer_signature ?? ""} on ${r.signed_at ?? ""}` : "Customer signature: __________________",
+                })}
+              />
             </TableCell>
           </TableRow>
         ))}
       </DocTable>
+
+      <Dialog open={!!signFor} onOpenChange={(o) => !o && setSignFor(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Capture customer signature</DialogTitle></DialogHeader>
+          <div className="space-y-2">
+            <Label>Customer name / signature</Label>
+            <Input value={sigName} onChange={(e) => setSigName(e.target.value)} />
+            <p className="text-xs text-muted-foreground">Upload a photo of the signed delivery note via the <Paperclip className="h-3 w-3 inline" /> action afterwards.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setSignFor(null)}>Cancel</Button>
+            <Button onClick={async () => { if (!sigName) return toast.error("Enter signature"); await sign(signFor!, sigName); setSignFor(null); }}>Save signature</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
