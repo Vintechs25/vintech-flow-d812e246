@@ -335,7 +335,19 @@ function SalesOrders() {
 
   async function setStatus(id: string, status: string) {
     await supabase.from("sales_orders").update({ status: status as any }).eq("id", id);
+    await supabase.rpc("log_audit" as any, { _table: "sales_orders", _record_id: id, _action: status });
     refresh();
+  }
+  const [pinFor, setPinFor] = useState<{ id: string; status: string } | null>(null);
+
+  function buildPrint(r: any): DocPrintData {
+    const c = customers.find((x) => x.id === r.customer_id);
+    return {
+      docType: "SALES ORDER", docNo: r.so_no, date: new Date(r.created_at).toLocaleDateString(),
+      reference: r.customer_lpo_no ? `CLPO: ${r.customer_lpo_no} → ${r.so_no}` : undefined,
+      billTo: { name: c?.name ?? "—", kra_pin: c?.kra_pin, address: c?.address, phone: c?.phone },
+      lines: [],
+    };
   }
 
   return (
@@ -387,15 +399,19 @@ function SalesOrders() {
             <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
             <TableCell className="text-right space-x-1">
               {r.status !== "approved" && r.status !== "completed" && (
-                <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "approved")}>Approve</Button>
+                <Button size="sm" variant="outline" onClick={() => setPinFor({ id: r.id, status: "approved" })}>Approve</Button>
               )}
               {r.status === "approved" && (
-                <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "completed")}>Mark complete</Button>
+                <Button size="sm" variant="outline" onClick={() => setPinFor({ id: r.id, status: "completed" })}>Mark complete</Button>
               )}
+              <DocActions table="sales_orders" docId={r.id} docLabel={r.so_no} buildPrint={() => buildPrint(r)} onReverted={refresh} />
             </TableCell>
           </TableRow>
         ))}
       </DocTable>
+      <PinApprovalDialog open={!!pinFor} onOpenChange={(o) => !o && setPinFor(null)}
+        title="Authorise sales order"
+        onApproved={async () => { if (pinFor) await setStatus(pinFor.id, pinFor.status); setPinFor(null); }} />
     </div>
   );
 }
