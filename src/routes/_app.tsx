@@ -28,6 +28,7 @@ const SECTIONS: { label: string; items: Item[] }[] = [
   { label: "Inventory", items: [
     { to: "/stock", label: "Stock Levels", icon: Package },
     { to: "/stock-movement", label: "Stock Movement", icon: ArrowLeftRight },
+    { to: "/stock-requisitions", label: "Stock Requisitions", icon: ClipboardList },
     { to: "/suppliers", label: "Suppliers", icon: Truck },
     { to: "/items", label: "Items & Catalogue", icon: Boxes },
   ]},
