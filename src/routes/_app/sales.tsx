@@ -219,7 +219,19 @@ function Quotations() {
 
   async function setStatus(id: string, status: string) {
     await supabase.from("quotations").update({ status: status as any }).eq("id", id);
+    await supabase.rpc("log_audit" as any, { _table: "quotations", _record_id: id, _action: status });
     refresh();
+  }
+  const [pinFor, setPinFor] = useState<{ id: string; status: string } | null>(null);
+
+  function buildPrint(r: any): DocPrintData {
+    const c = customers.find((x) => x.id === r.customer_id);
+    return {
+      docType: "QUOTATION", docNo: r.quote_no, date: new Date(r.created_at).toLocaleDateString(),
+      terms: r.payment_terms, dueDate: r.validity ?? undefined,
+      billTo: { name: c?.name ?? "—", kra_pin: c?.kra_pin, address: c?.address, phone: c?.phone },
+      lines: [], // items fetched lazily — kept compact
+    };
   }
 
   return (
@@ -261,14 +273,18 @@ function Quotations() {
             <TableCell className="text-right space-x-1">
               {r.status !== "approved" && r.status !== "rejected" && (
                 <>
-                  <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "approved")}>Approve</Button>
-                  <Button size="sm" variant="ghost" onClick={() => setStatus(r.id, "rejected")}>Reject</Button>
+                  <Button size="sm" variant="outline" onClick={() => setPinFor({ id: r.id, status: "approved" })}>Approve</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setPinFor({ id: r.id, status: "rejected" })}>Reject</Button>
                 </>
               )}
+              <DocActions table="quotations" docId={r.id} docLabel={r.quote_no} buildPrint={() => buildPrint(r)} onReverted={refresh} />
             </TableCell>
           </TableRow>
         ))}
       </DocTable>
+      <PinApprovalDialog open={!!pinFor} onOpenChange={(o) => !o && setPinFor(null)}
+        title="Authorise quotation status change"
+        onApproved={async () => { if (pinFor) await setStatus(pinFor.id, pinFor.status); setPinFor(null); }} />
     </div>
   );
 }
