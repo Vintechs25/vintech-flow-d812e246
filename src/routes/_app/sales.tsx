@@ -750,18 +750,33 @@ function Invoices() {
           </DialogContent>
         </Dialog>
       </div>
-      <DocTable loading={loading} cols={["Invoice", "Customer", "Total", "Paid", "Status", "Due", "Created"]}>
-        {rows.map((r) => (
-          <TableRow key={r.id}>
-            <TableCell className="font-mono">{r.invoice_no}{r.is_tax_invoice && <span className="ml-2 text-[10px] text-primary">TAX</span>}</TableCell>
-            <TableCell>{customers.find((c) => c.id === r.customer_id)?.name ?? "—"}</TableCell>
-            <TableCell>{fmt(r.total)}</TableCell>
-            <TableCell>{fmt(r.amount_paid)}</TableCell>
-            <TableCell><StatusBadge status={r.status} /></TableCell>
-            <TableCell className="text-xs">{r.due_date ?? "—"}</TableCell>
-            <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
-          </TableRow>
-        ))}
+      <DocTable loading={loading} cols={["Invoice", "Customer", "Total", "Paid", "Status", "Due", "Created", "Actions"]}>
+        {rows.map((r) => {
+          const c = customers.find((x) => x.id === r.customer_id);
+          return (
+            <TableRow key={r.id}>
+              <TableCell className="font-mono">{r.invoice_no}{r.is_tax_invoice && <span className="ml-2 text-[10px] text-primary">TAX</span>}</TableCell>
+              <TableCell>{c?.name ?? "—"}</TableCell>
+              <TableCell>{fmt(r.total)}</TableCell>
+              <TableCell>{fmt(r.amount_paid)}</TableCell>
+              <TableCell><StatusBadge status={r.status} /></TableCell>
+              <TableCell className="text-xs">{r.due_date ?? "—"}</TableCell>
+              <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
+              <TableCell className="text-right">
+                <DocActions
+                  table="invoices" docId={r.id} docLabel={r.invoice_no} onReverted={refresh}
+                  buildPrint={() => ({
+                    docType: r.is_tax_invoice ? "TAX INVOICE" : "INVOICE", docNo: r.invoice_no,
+                    date: new Date(r.created_at).toLocaleDateString(), dueDate: r.due_date ?? undefined,
+                    reference: r.customer_lpo_no ? `Customer LPO: ${r.customer_lpo_no}` : undefined,
+                    billTo: { name: c?.name ?? "—", kra_pin: r.buyer_kra_pin ?? c?.kra_pin, address: c?.address, phone: c?.phone },
+                    lines: [],
+                  })}
+                />
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </DocTable>
     </div>
   );
