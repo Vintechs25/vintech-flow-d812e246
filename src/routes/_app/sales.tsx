@@ -436,8 +436,11 @@ function PickingLists() {
     toast.success(`Created ${pl_no}`); setOpen(false); setSo(""); setPicker(""); refresh();
   }
   async function complete(id: string) {
-    await supabase.from("picking_lists").update({ status: "completed" as any }).eq("id", id); refresh();
+    await supabase.from("picking_lists").update({ status: "completed" as any }).eq("id", id);
+    await supabase.rpc("log_audit" as any, { _table: "picking_lists", _record_id: id, _action: "completed" });
+    refresh();
   }
+  const [pinFor, setPinFor] = useState<string | null>(null);
 
   return (
     <div className="space-y-4">
@@ -469,11 +472,15 @@ function PickingLists() {
             <TableCell><StatusBadge status={r.status} /></TableCell>
             <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
             <TableCell className="text-right">
-              {r.status !== "completed" && <Button size="sm" variant="outline" onClick={() => complete(r.id)}><Check className="h-3 w-3 mr-1" />Complete</Button>}
+              {r.status !== "completed" && <Button size="sm" variant="outline" onClick={() => setPinFor(r.id)}><Check className="h-3 w-3 mr-1" />Complete</Button>}
+              <DocActions table="picking_lists" docId={r.id} docLabel={r.pl_no} onReverted={refresh} />
             </TableCell>
           </TableRow>
         ))}
       </DocTable>
+      <PinApprovalDialog open={!!pinFor} onOpenChange={(o) => !o && setPinFor(null)}
+        title="Authorise picking completion"
+        onApproved={async () => { if (pinFor) await complete(pinFor); setPinFor(null); }} />
     </div>
   );
 }
