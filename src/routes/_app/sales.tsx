@@ -12,12 +12,15 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Check } from "lucide-react";
+import { Plus, Trash2, Check, Paperclip } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBadge } from "@/components/status-badge";
 import { StepIndicator, BlockBanner } from "@/components/chain-ui";
 import { nextDocNo } from "@/hooks/use-table";
 import { PaymentTermsSelect } from "@/components/payment-terms-select";
+import { DocActions } from "@/components/doc-actions";
+import { PinApprovalDialog } from "@/components/pin-approval-dialog";
+import type { DocPrintData } from "@/components/print-dialog";
 
 export const Route = createFileRoute("/_app/sales")({ component: SalesPage });
 
@@ -216,7 +219,19 @@ function Quotations() {
 
   async function setStatus(id: string, status: string) {
     await supabase.from("quotations").update({ status: status as any }).eq("id", id);
+    await supabase.rpc("log_audit" as any, { _table: "quotations", _record_id: id, _action: status });
     refresh();
+  }
+  const [pinFor, setPinFor] = useState<{ id: string; status: string } | null>(null);
+
+  function buildPrint(r: any): DocPrintData {
+    const c = customers.find((x) => x.id === r.customer_id);
+    return {
+      docType: "QUOTATION", docNo: r.quote_no, date: new Date(r.created_at).toLocaleDateString(),
+      terms: r.payment_terms, dueDate: r.validity ?? undefined,
+      billTo: { name: c?.name ?? "—", kra_pin: c?.kra_pin, address: c?.address, phone: c?.phone },
+      lines: [], // items fetched lazily — kept compact
+    };
   }
 
   return (
@@ -258,14 +273,18 @@ function Quotations() {
             <TableCell className="text-right space-x-1">
               {r.status !== "approved" && r.status !== "rejected" && (
                 <>
-                  <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "approved")}>Approve</Button>
-                  <Button size="sm" variant="ghost" onClick={() => setStatus(r.id, "rejected")}>Reject</Button>
+                  <Button size="sm" variant="outline" onClick={() => setPinFor({ id: r.id, status: "approved" })}>Approve</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setPinFor({ id: r.id, status: "rejected" })}>Reject</Button>
                 </>
               )}
+              <DocActions table="quotations" docId={r.id} docLabel={r.quote_no} buildPrint={() => buildPrint(r)} onReverted={refresh} />
             </TableCell>
           </TableRow>
         ))}
       </DocTable>
+      <PinApprovalDialog open={!!pinFor} onOpenChange={(o) => !o && setPinFor(null)}
+        title="Authorise quotation status change"
+        onApproved={async () => { if (pinFor) await setStatus(pinFor.id, pinFor.status); setPinFor(null); }} />
     </div>
   );
 }
@@ -316,7 +335,19 @@ function SalesOrders() {
 
   async function setStatus(id: string, status: string) {
     await supabase.from("sales_orders").update({ status: status as any }).eq("id", id);
+    await supabase.rpc("log_audit" as any, { _table: "sales_orders", _record_id: id, _action: status });
     refresh();
+  }
+  const [pinFor, setPinFor] = useState<{ id: string; status: string } | null>(null);
+
+  function buildPrint(r: any): DocPrintData {
+    const c = customers.find((x) => x.id === r.customer_id);
+    return {
+      docType: "SALES ORDER", docNo: r.so_no, date: new Date(r.created_at).toLocaleDateString(),
+      reference: r.customer_lpo_no ? `CLPO: ${r.customer_lpo_no} → ${r.so_no}` : undefined,
+      billTo: { name: c?.name ?? "—", kra_pin: c?.kra_pin, address: c?.address, phone: c?.phone },
+      lines: [],
+    };
   }
 
   return (
@@ -368,15 +399,19 @@ function SalesOrders() {
             <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
             <TableCell className="text-right space-x-1">
               {r.status !== "approved" && r.status !== "completed" && (
-                <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "approved")}>Approve</Button>
+                <Button size="sm" variant="outline" onClick={() => setPinFor({ id: r.id, status: "approved" })}>Approve</Button>
               )}
               {r.status === "approved" && (
-                <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "completed")}>Mark complete</Button>
+                <Button size="sm" variant="outline" onClick={() => setPinFor({ id: r.id, status: "completed" })}>Mark complete</Button>
               )}
+              <DocActions table="sales_orders" docId={r.id} docLabel={r.so_no} buildPrint={() => buildPrint(r)} onReverted={refresh} />
             </TableCell>
           </TableRow>
         ))}
       </DocTable>
+      <PinApprovalDialog open={!!pinFor} onOpenChange={(o) => !o && setPinFor(null)}
+        title="Authorise sales order"
+        onApproved={async () => { if (pinFor) await setStatus(pinFor.id, pinFor.status); setPinFor(null); }} />
     </div>
   );
 }
@@ -401,8 +436,11 @@ function PickingLists() {
     toast.success(`Created ${pl_no}`); setOpen(false); setSo(""); setPicker(""); refresh();
   }
   async function complete(id: string) {
-    await supabase.from("picking_lists").update({ status: "completed" as any }).eq("id", id); refresh();
+    await supabase.from("picking_lists").update({ status: "completed" as any }).eq("id", id);
+    await supabase.rpc("log_audit" as any, { _table: "picking_lists", _record_id: id, _action: "completed" });
+    refresh();
   }
+  const [pinFor, setPinFor] = useState<string | null>(null);
 
   return (
     <div className="space-y-4">
@@ -434,11 +472,15 @@ function PickingLists() {
             <TableCell><StatusBadge status={r.status} /></TableCell>
             <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
             <TableCell className="text-right">
-              {r.status !== "completed" && <Button size="sm" variant="outline" onClick={() => complete(r.id)}><Check className="h-3 w-3 mr-1" />Complete</Button>}
+              {r.status !== "completed" && <Button size="sm" variant="outline" onClick={() => setPinFor(r.id)}><Check className="h-3 w-3 mr-1" />Complete</Button>}
+              <DocActions table="picking_lists" docId={r.id} docLabel={r.pl_no} onReverted={refresh} />
             </TableCell>
           </TableRow>
         ))}
       </DocTable>
+      <PinApprovalDialog open={!!pinFor} onOpenChange={(o) => !o && setPinFor(null)}
+        title="Authorise picking completion"
+        onApproved={async () => { if (pinFor) await complete(pinFor); setPinFor(null); }} />
     </div>
   );
 }
@@ -488,7 +530,7 @@ function PackingNotes() {
           </DialogContent>
         </Dialog>
       </div>
-      <DocTable loading={loading} cols={["PN", "SO", "Cartons", "Weight", "Condition", "Created"]}>
+      <DocTable loading={loading} cols={["PN", "SO", "Cartons", "Weight", "Condition", "Created", "Actions"]}>
         {rows.map((r) => (
           <TableRow key={r.id}>
             <TableCell className="font-mono">{r.pn_no}</TableCell>
@@ -497,6 +539,9 @@ function PackingNotes() {
             <TableCell>{r.weight ?? "—"}</TableCell>
             <TableCell>{r.condition_check}</TableCell>
             <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
+            <TableCell className="text-right">
+              <DocActions table="packing_notes" docId={r.id} docLabel={r.pn_no} onReverted={refresh} />
+            </TableCell>
           </TableRow>
         ))}
       </DocTable>
@@ -525,15 +570,16 @@ function DeliveryNotes() {
     if (error) return toast.error(error.message);
     toast.success(`Created ${dn_no}`); setOpen(false); setSo(""); refresh();
   }
-  async function sign(id: string) {
-    const sig = prompt("Customer name / signature:");
-    if (!sig) return;
+  async function sign(id: string, sig: string) {
     const { error } = await supabase.from("delivery_notes").update({
       signed: true, signed_at: new Date().toISOString(), customer_signature: sig,
     }).eq("id", id);
     if (error) return toast.error(error.message);
+    await supabase.rpc("log_audit" as any, { _table: "delivery_notes", _record_id: id, _action: "signed" });
     toast.success("Delivery signed"); refresh();
   }
+  const [signFor, setSignFor] = useState<string | null>(null);
+  const [sigName, setSigName] = useState("");
 
   return (
     <div className="space-y-4">
@@ -567,12 +613,36 @@ function DeliveryNotes() {
             <TableCell>{r.vehicle_reg || "—"}</TableCell>
             <TableCell><StatusBadge status={r.signed ? "completed" : "pending"} /></TableCell>
             <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
-            <TableCell className="text-right">
-              {!r.signed && <Button size="sm" variant="outline" onClick={() => sign(r.id)}>Capture signature</Button>}
+            <TableCell className="text-right space-x-1">
+              {!r.signed && <Button size="sm" variant="outline" onClick={() => { setSignFor(r.id); setSigName(""); }}>Capture signature</Button>}
+              <DocActions
+                table="delivery_notes" docId={r.id} docLabel={r.dn_no} onReverted={refresh}
+                buildPrint={() => ({
+                  docType: "DELIVERY NOTE", docNo: r.dn_no, date: new Date(r.created_at).toLocaleDateString(),
+                  reference: r.so_id ? `SO ${r.so_id.slice(0, 8)} → ${r.dn_no}` : undefined,
+                  billTo: { name: r.driver_name || "Driver", address: r.delivery_address || undefined, phone: r.vehicle_reg || undefined },
+                  lines: [], signoff: r.signed ? `Signed by: ${r.customer_signature ?? ""} on ${r.signed_at ?? ""}` : "Customer signature: __________________",
+                })}
+              />
             </TableCell>
           </TableRow>
         ))}
       </DocTable>
+
+      <Dialog open={!!signFor} onOpenChange={(o) => !o && setSignFor(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Capture customer signature</DialogTitle></DialogHeader>
+          <div className="space-y-2">
+            <Label>Customer name / signature</Label>
+            <Input value={sigName} onChange={(e) => setSigName(e.target.value)} />
+            <p className="text-xs text-muted-foreground">Upload a photo of the signed delivery note via the <Paperclip className="h-3 w-3 inline" /> action afterwards.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setSignFor(null)}>Cancel</Button>
+            <Button onClick={async () => { if (!sigName) return toast.error("Enter signature"); await sign(signFor!, sigName); setSignFor(null); }}>Save signature</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -680,18 +750,33 @@ function Invoices() {
           </DialogContent>
         </Dialog>
       </div>
-      <DocTable loading={loading} cols={["Invoice", "Customer", "Total", "Paid", "Status", "Due", "Created"]}>
-        {rows.map((r) => (
-          <TableRow key={r.id}>
-            <TableCell className="font-mono">{r.invoice_no}{r.is_tax_invoice && <span className="ml-2 text-[10px] text-primary">TAX</span>}</TableCell>
-            <TableCell>{customers.find((c) => c.id === r.customer_id)?.name ?? "—"}</TableCell>
-            <TableCell>{fmt(r.total)}</TableCell>
-            <TableCell>{fmt(r.amount_paid)}</TableCell>
-            <TableCell><StatusBadge status={r.status} /></TableCell>
-            <TableCell className="text-xs">{r.due_date ?? "—"}</TableCell>
-            <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
-          </TableRow>
-        ))}
+      <DocTable loading={loading} cols={["Invoice", "Customer", "Total", "Paid", "Status", "Due", "Created", "Actions"]}>
+        {rows.map((r) => {
+          const c = customers.find((x) => x.id === r.customer_id);
+          return (
+            <TableRow key={r.id}>
+              <TableCell className="font-mono">{r.invoice_no}{r.is_tax_invoice && <span className="ml-2 text-[10px] text-primary">TAX</span>}</TableCell>
+              <TableCell>{c?.name ?? "—"}</TableCell>
+              <TableCell>{fmt(r.total)}</TableCell>
+              <TableCell>{fmt(r.amount_paid)}</TableCell>
+              <TableCell><StatusBadge status={r.status} /></TableCell>
+              <TableCell className="text-xs">{r.due_date ?? "—"}</TableCell>
+              <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
+              <TableCell className="text-right">
+                <DocActions
+                  table="invoices" docId={r.id} docLabel={r.invoice_no} onReverted={refresh}
+                  buildPrint={() => ({
+                    docType: r.is_tax_invoice ? "TAX INVOICE" : "INVOICE", docNo: r.invoice_no,
+                    date: new Date(r.created_at).toLocaleDateString(), dueDate: r.due_date ?? undefined,
+                    reference: r.customer_lpo_no ? `Customer LPO: ${r.customer_lpo_no}` : undefined,
+                    billTo: { name: c?.name ?? "—", kra_pin: r.buyer_kra_pin ?? c?.kra_pin, address: c?.address, phone: c?.phone },
+                    lines: [],
+                  })}
+                />
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </DocTable>
     </div>
   );
@@ -763,7 +848,7 @@ function Receipts() {
           </DialogContent>
         </Dialog>
       </div>
-      <DocTable loading={loading} cols={["Receipt", "Invoice", "Amount", "Method", "M-Pesa", "Created"]}>
+      <DocTable loading={loading} cols={["Receipt", "Invoice", "Amount", "Method", "M-Pesa", "Created", "Actions"]}>
         {rows.map((r) => (
           <TableRow key={r.id}>
             <TableCell className="font-mono">{r.receipt_no}</TableCell>
@@ -772,6 +857,17 @@ function Receipts() {
             <TableCell className="capitalize">{r.method}</TableCell>
             <TableCell className="font-mono text-xs">{r.mpesa_code || "—"}</TableCell>
             <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
+            <TableCell className="text-right">
+              <DocActions
+                table="receipts" docId={r.id} docLabel={r.receipt_no} onReverted={refresh}
+                buildPrint={() => ({
+                  docType: "OFFICIAL RECEIPT", docNo: r.receipt_no, date: new Date(r.created_at).toLocaleDateString(),
+                  reference: r.invoice_id ? `Inv ${r.invoice_id.slice(0, 8)}` : undefined,
+                  billTo: { name: "Customer" }, terms: r.method,
+                  lines: [{ description: `Payment via ${r.method}${r.mpesa_code ? ` (${r.mpesa_code})` : ""}`, quantity: 1, unit_price: Number(r.amount), vat_rate: 0 }],
+                })}
+              />
+            </TableCell>
           </TableRow>
         ))}
       </DocTable>
@@ -824,7 +920,7 @@ function CreditNotes() {
           </DialogContent>
         </Dialog>
       </div>
-      <DocTable loading={loading} cols={["CN", "Invoice", "Amount", "Reason", "Created"]}>
+      <DocTable loading={loading} cols={["CN", "Invoice", "Amount", "Reason", "Created", "Actions"]}>
         {rows.map((r) => (
           <TableRow key={r.id}>
             <TableCell className="font-mono">{r.cn_no}</TableCell>
@@ -832,6 +928,17 @@ function CreditNotes() {
             <TableCell>{fmt(r.amount)}</TableCell>
             <TableCell className="text-muted-foreground">{r.reason || "—"}</TableCell>
             <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
+            <TableCell className="text-right">
+              <DocActions
+                table="credit_notes" docId={r.id} docLabel={r.cn_no} onReverted={refresh}
+                buildPrint={() => ({
+                  docType: "CREDIT NOTE", docNo: r.cn_no, date: new Date(r.created_at).toLocaleDateString(),
+                  reference: r.invoice_id ? `Against Inv ${r.invoice_id.slice(0, 8)}` : undefined,
+                  billTo: { name: "Customer" }, notes: r.reason ?? undefined,
+                  lines: [{ description: r.reason || "Credit", quantity: 1, unit_price: Number(r.amount) }],
+                })}
+              />
+            </TableCell>
           </TableRow>
         ))}
       </DocTable>
