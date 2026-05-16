@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppUsersRouteImport } from './routes/_app/users'
 import { Route as AppSuppliersRouteImport } from './routes/_app/suppliers'
+import { Route as AppStockRequisitionsRouteImport } from './routes/_app/stock-requisitions'
 import { Route as AppStockMovementRouteImport } from './routes/_app/stock-movement'
 import { Route as AppStockRouteImport } from './routes/_app/stock'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
@@ -48,6 +49,11 @@ const AppUsersRoute = AppUsersRouteImport.update({
 const AppSuppliersRoute = AppSuppliersRouteImport.update({
   id: '/suppliers',
   path: '/suppliers',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStockRequisitionsRoute = AppStockRequisitionsRouteImport.update({
+  id: '/stock-requisitions',
+  path: '/stock-requisitions',
   getParentRoute: () => AppRoute,
 } as any)
 const AppStockMovementRoute = AppStockMovementRouteImport.update({
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/stock': typeof AppStockRoute
   '/stock-movement': typeof AppStockMovementRoute
+  '/stock-requisitions': typeof AppStockRequisitionsRoute
   '/suppliers': typeof AppSuppliersRoute
   '/users': typeof AppUsersRoute
 }
@@ -136,6 +143,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/stock': typeof AppStockRoute
   '/stock-movement': typeof AppStockMovementRoute
+  '/stock-requisitions': typeof AppStockRequisitionsRoute
   '/suppliers': typeof AppSuppliersRoute
   '/users': typeof AppUsersRoute
   '/': typeof AppIndexRoute
@@ -155,6 +163,7 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_app/stock': typeof AppStockRoute
   '/_app/stock-movement': typeof AppStockMovementRoute
+  '/_app/stock-requisitions': typeof AppStockRequisitionsRoute
   '/_app/suppliers': typeof AppSuppliersRoute
   '/_app/users': typeof AppUsersRoute
   '/_app/': typeof AppIndexRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/stock'
     | '/stock-movement'
+    | '/stock-requisitions'
     | '/suppliers'
     | '/users'
   fileRoutesByTo: FileRoutesByTo
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/stock'
     | '/stock-movement'
+    | '/stock-requisitions'
     | '/suppliers'
     | '/users'
     | '/'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/stock'
     | '/_app/stock-movement'
+    | '/_app/stock-requisitions'
     | '/_app/suppliers'
     | '/_app/users'
     | '/_app/'
@@ -254,6 +266,13 @@ declare module '@tanstack/react-router' {
       path: '/suppliers'
       fullPath: '/suppliers'
       preLoaderRoute: typeof AppSuppliersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/stock-requisitions': {
+      id: '/_app/stock-requisitions'
+      path: '/stock-requisitions'
+      fullPath: '/stock-requisitions'
+      preLoaderRoute: typeof AppStockRequisitionsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/stock-movement': {
@@ -348,6 +367,7 @@ interface AppRouteChildren {
   AppSettingsRoute: typeof AppSettingsRoute
   AppStockRoute: typeof AppStockRoute
   AppStockMovementRoute: typeof AppStockMovementRoute
+  AppStockRequisitionsRoute: typeof AppStockRequisitionsRoute
   AppSuppliersRoute: typeof AppSuppliersRoute
   AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -365,6 +385,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSettingsRoute: AppSettingsRoute,
   AppStockRoute: AppStockRoute,
   AppStockMovementRoute: AppStockMovementRoute,
+  AppStockRequisitionsRoute: AppStockRequisitionsRoute,
   AppSuppliersRoute: AppSuppliersRoute,
   AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
