@@ -848,7 +848,7 @@ function Receipts() {
           </DialogContent>
         </Dialog>
       </div>
-      <DocTable loading={loading} cols={["Receipt", "Invoice", "Amount", "Method", "M-Pesa", "Created"]}>
+      <DocTable loading={loading} cols={["Receipt", "Invoice", "Amount", "Method", "M-Pesa", "Created", "Actions"]}>
         {rows.map((r) => (
           <TableRow key={r.id}>
             <TableCell className="font-mono">{r.receipt_no}</TableCell>
@@ -857,6 +857,17 @@ function Receipts() {
             <TableCell className="capitalize">{r.method}</TableCell>
             <TableCell className="font-mono text-xs">{r.mpesa_code || "—"}</TableCell>
             <TableCell className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</TableCell>
+            <TableCell className="text-right">
+              <DocActions
+                table="receipts" docId={r.id} docLabel={r.receipt_no} onReverted={refresh}
+                buildPrint={() => ({
+                  docType: "OFFICIAL RECEIPT", docNo: r.receipt_no, date: new Date(r.created_at).toLocaleDateString(),
+                  reference: r.invoice_id ? `Inv ${r.invoice_id.slice(0, 8)}` : undefined,
+                  billTo: { name: "Customer" }, terms: r.method,
+                  lines: [{ description: `Payment via ${r.method}${r.mpesa_code ? ` (${r.mpesa_code})` : ""}`, quantity: 1, unit_price: Number(r.amount), vat_rate: 0 }],
+                })}
+              />
+            </TableCell>
           </TableRow>
         ))}
       </DocTable>
